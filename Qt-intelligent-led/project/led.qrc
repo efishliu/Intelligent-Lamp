@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/led/src">
+        <file>led.qss</file>
+        <file>led2.qss</file>
+        <file>led3.qss</file>
+        <file>blackground.jpg</file>
+        <file>bg2.jpg</file>
+    </qresource>
+    <qresource prefix="/new/prefix1"/>
+    <qresource prefix="/"/>
+</RCC>

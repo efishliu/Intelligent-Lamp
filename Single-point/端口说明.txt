@@ -1,0 +1,16 @@
+LED灯：
+LED1 冷光灯 P1_0  ->	不接
+LED2 暖光灯 P1_1  ->	不接
+LED3 提示灯 P1_4  ->	不接
+
+温湿度：
+DATA_PIN P0_7	  ->	J5 3
+VCC 		  ->	LCD(液晶屏） 6
+GND 		  ->	LCD 	     8
+
+测距：
+TRIG P2_0	  ->	J6 8
+ECHO P1_3	  ->	J5 10
+VCC +5V           ->	J6 2
+GND		  ->    J6 10
+

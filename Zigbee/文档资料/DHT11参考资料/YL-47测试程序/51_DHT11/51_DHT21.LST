@@ -1,0 +1,273 @@
+C51 COMPILER V7.07   51_DHT21                                                              06/27/2009 10:04:27 PAGE 1   
+
+
+C51 COMPILER V7.07, COMPILATION OF MODULE 51_DHT21
+OBJECT MODULE PLACED IN 51_DHT21.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE 51_DHT21.c BROWSE DEBUG OBJECTEXTEND
+
+stmt level    source
+
+   1          //****************************************************************//
+   2          //                      DHT21使用范例 
+   3          //单片机 ： AT89S52 或 STC89C52RC 
+   4          // 功能  ：串口发送温湿度数据 晶振 11.0592M 波特率 9600 
+   5          //硬件连接： P2.0口为通讯口连接DHT11,DHT11的电源和地连接单片机的电源和地，单片机串口加MAX232连接电脑 
+   6          // 公司  ：奥松电子    
+   7          //****************************************************************//
+   8          
+   9          #include <reg51.h>
+  10          #include <intrins.h> 
+  11          //
+  12          typedef unsigned char  U8;       /* defined for unsigned 8-bits integer variable          无符号8位整型变量  */
+  13          typedef signed   char  S8;       /* defined for signed 8-bits integer variable            有符号8位整型变量  */
+  14          typedef unsigned int   U16;      /* defined for unsigned 16-bits integer variable         无符号16位整型变量 */
+  15          typedef signed   int   S16;      /* defined for signed 16-bits integer variable           有符号16位整型变量 */
+  16          typedef unsigned long  U32;      /* defined for unsigned 32-bits integer variable         无符号32位整型变量 */
+  17          typedef signed   long  S32;      /* defined for signed 32-bits integer variable           有符号32位整型变量 */
+  18          typedef float          F32;      /* single precision floating point variable (32bits) 单精度浮点数（32位长
+             -度） */
+  19          typedef double         F64;      /* double precision floating point variable (64bits) 双精度浮点数（64位长
+             -度） */
+  20          //
+  21          #define uchar unsigned char
+  22          #define uint unsigned int
+  23          #define   Data_0_time    4
+  24          
+  25          //----------------------------------------------//
+  26          //----------------IO口定义区--------------------//
+  27          //----------------------------------------------//
+  28          sbit  P2_0  = P2^0 ;
+  29          
+  30          //----------------------------------------------//
+  31          //----------------定义区--------------------//
+  32          //----------------------------------------------//
+  33          U8  U8FLAG,k;
+  34          U8  U8count,U8temp;
+  35          U8  U8T_data_H,U8T_data_L,U8RH_data_H,U8RH_data_L,U8checkdata;
+  36          U8  U8T_data_H_temp,U8T_data_L_temp,U8RH_data_H_temp,U8RH_data_L_temp,U8checkdata_temp;
+  37          U8  U8comdata;
+  38          U8  outdata[5];  //定义发送的字节数        
+  39          U8  indata[5];
+  40          U8  count, count_r=0;
+  41          U8  str[5]={"RS232"};
+  42          U16 U16temp1,U16temp2;
+  43          SendData(U8 *a)
+  44          {
+  45   1              outdata[0] = a[0]; 
+  46   1              outdata[1] = a[1];
+  47   1              outdata[2] = a[2];
+  48   1              outdata[3] = a[3];
+  49   1              outdata[4] = a[4];
+  50   1              count = 1;
+  51   1              SBUF=outdata[0];
+  52   1      }
+  53          
+C51 COMPILER V7.07   51_DHT21                                                              06/27/2009 10:04:27 PAGE 2   
+
+  54                 void Delay(U16 j)
+  55              {      U8 i;
+  56   1                  for(;j>0;j--)
+  57   1                {     
+  58   2                      for(i=0;i<27;i++);
+  59   2      
+  60   2                }
+  61   1          }
+  62                 void  Delay_10us(void)
+  63                {
+  64   1              U8 i;
+  65   1              i--;
+  66   1              i--;
+  67   1              i--;
+  68   1              i--;
+  69   1              i--;
+  70   1              i--;
+  71   1             }
+  72                  
+  73                  void  COM(void)
+  74                {
+  75   1           
+  76   1                      U8 i;
+  77   1                
+  78   1             for(i=0;i<8;i++)    
+  79   1                  {
+  80   2                      
+  81   2                          U8FLAG=2;   
+  82   2                      while((!P2_0)&&U8FLAG++);
+  83   2                              Delay_10us();
+  84   2                          Delay_10us();
+  85   2                              Delay_10us();
+  86   2                              U8temp=0;
+  87   2                   if(P2_0)U8temp=1;
+  88   2                          U8FLAG=2;
+  89   2                       while((P2_0)&&U8FLAG++);
+  90   2                      //超时则跳出for循环               
+  91   2                       if(U8FLAG==1)break;
+  92   2                      //判断数据位是0还是1     
+  93   2                         
+  94   2                      // 如果高电平高过预定0高电平值则数据位为 1 
+  95   2                       
+  96   2                         U8comdata<<=1;
+  97   2                         U8comdata|=U8temp;        //0
+  98   2                   }//rof
+  99   1                 
+ 100   1              }
+ 101          
+ 102                  //--------------------------------
+ 103                  //-----湿度读取子程序 ------------
+ 104                  //--------------------------------
+ 105                  //----以下变量均为全局变量--------
+ 106                  //----温度高8位== U8T_data_H------
+ 107                  //----温度低8位== U8T_data_L------
+ 108                  //----湿度高8位== U8RH_data_H-----
+ 109                  //----湿度低8位== U8RH_data_L-----
+ 110                  //----校验 8位 == U8checkdata-----
+ 111                  //----调用相关子程序如下----------
+ 112                  //---- Delay();, Delay_10us();,COM(); 
+ 113                  //--------------------------------
+ 114          
+ 115                  void RH(void)
+C51 COMPILER V7.07   51_DHT21                                                              06/27/2009 10:04:27 PAGE 3   
+
+ 116                  {
+ 117   1                //主机拉低18ms 
+ 118   1             P2_0=0;
+ 119   1                 Delay(180);
+ 120   1                 P2_0=1;
+ 121   1               //总线由上拉电阻拉高 主机延时20us
+ 122   1                 Delay_10us();
+ 123   1                 Delay_10us();
+ 124   1                 Delay_10us();
+ 125   1                 Delay_10us();
+ 126   1               //主机设为输入 判断从机响应信号 
+ 127   1                 P2_0=1;
+ 128   1               //判断从机是否有低电平响应信号 如不响应则跳出，响应则向下运行    
+ 129   1                 if(!P2_0)             //T !    
+ 130   1                 {
+ 131   2                 U8FLAG=2;
+ 132   2               //判断从机是否发出 80us 的低电平响应信号是否结束        
+ 133   2                 while((!P2_0)&&U8FLAG++);
+ 134   2                 U8FLAG=2;
+ 135   2               //判断从机是否发出 80us 的高电平，如发出则进入数据接收状态
+ 136   2                 while((P2_0)&&U8FLAG++);
+ 137   2               //数据接收状态          
+ 138   2                 COM();
+ 139   2                 U8RH_data_H_temp=U8comdata;
+ 140   2                 COM();
+ 141   2                 U8RH_data_L_temp=U8comdata;
+ 142   2                 COM();
+ 143   2                 U8T_data_H_temp=U8comdata;
+ 144   2                 COM();
+ 145   2                 U8T_data_L_temp=U8comdata;
+ 146   2                 COM();
+ 147   2                 U8checkdata_temp=U8comdata;
+ 148   2                 P2_0=1;
+ 149   2               //数据校验 
+ 150   2               
+ 151   2                 U8temp=(U8T_data_H_temp+U8T_data_L_temp+U8RH_data_H_temp+U8RH_data_L_temp);
+ 152   2                 if(U8temp==U8checkdata_temp)
+ 153   2                 {
+ 154   3                        U8RH_data_H=U8RH_data_H_temp;
+ 155   3                        U8RH_data_L=U8RH_data_L_temp;
+ 156   3                        U8T_data_H=U8T_data_H_temp;
+ 157   3                        U8T_data_L=U8T_data_L_temp;
+ 158   3                        U8checkdata=U8checkdata_temp;
+ 159   3                 }//fi
+ 160   2                 }//fi
+ 161   1      
+ 162   1              }
+ 163                  
+ 164          //----------------------------------------------
+ 165          //main()功能描述:  AT89C51  11.0592MHz  串口发 
+ 166          //送温湿度数据,波特率 9600 
+ 167          //----------------------------------------------
+ 168          void main()
+ 169          {
+ 170   1              U8  i,j;
+ 171   1              
+ 172   1              //uchar str[6]={"RS232"};
+ 173   1              /* 系统初始化 */
+ 174   1              TMOD = 0x20;      //定时器T1使用工作方式2
+ 175   1              TH1 = 253;        // 设置初值
+ 176   1              TL1 = 253;
+ 177   1              TR1 = 1;          // 开始计时
+C51 COMPILER V7.07   51_DHT21                                                              06/27/2009 10:04:27 PAGE 4   
+
+ 178   1              SCON = 0x50;      //工作方式1，波特率9600bps，允许接收   
+ 179   1              ES = 1;
+ 180   1              EA = 1;           // 打开所以中断   
+ 181   1              TI = 0;
+ 182   1              RI = 0;
+ 183   1              SendData(str) ;   //发送到串口 
+ 184   1              Delay(1);         //延时100US（12M晶振)
+ 185   1              while(1)
+ 186   1              {  
+ 187   2      
+ 188   2                 //------------------------
+ 189   2                 //调用温湿度读取子程序 
+ 190   2                 RH();
+ 191   2                 //串口显示程序 
+ 192   2                 //--------------------------
+ 193   2      
+ 194   2                 str[0]=U8RH_data_H;
+ 195   2                 str[1]=U8RH_data_L;
+ 196   2                 str[2]=U8T_data_H;
+ 197   2                 str[3]=U8T_data_L;
+ 198   2                 str[4]=U8checkdata;
+ 199   2                 SendData(str) ;  //发送到串口  
+ 200   2                 //读取模块数据周期不易小于 2S 
+ 201   2                 Delay(20000);
+ 202   2              }//elihw
+ 203   1              
+ 204   1      }// main
+*** WARNING C280 IN LINE 170 OF 51_DHT21.C: 'i': unreferenced local variable
+*** WARNING C280 IN LINE 170 OF 51_DHT21.C: 'j': unreferenced local variable
+ 205          
+ 206          void RSINTR() interrupt 4 using 2
+ 207          {
+ 208   1              U8 InPut3;
+ 209   1              if(TI==1) //发送中断      
+ 210   1              {
+ 211   2                      TI=0;
+ 212   2                      if(count!=5) //发送完5位数据     
+ 213   2                      {
+ 214   3                              SBUF= outdata[count];
+ 215   3                              count++;
+ 216   3                      }
+ 217   2              }
+ 218   1      
+ 219   1              if(RI==1)        //接收中断               
+ 220   1              {       
+ 221   2                      InPut3=SBUF;
+ 222   2                      indata[count_r]=InPut3;
+ 223   2                      count_r++;
+ 224   2                      RI=0;                                                            
+ 225   2                      if (count_r==5)//接收完4位数据 
+ 226   2                      {
+ 227   3                      //数据接收完毕处理。
+ 228   3                              count_r=0;
+ 229   3                      str[0]=indata[0];
+ 230   3                       str[1]=indata[1];
+ 231   3                         str[2]=indata[2];
+ 232   3                               str[3]=indata[3];
+ 233   3                                       str[4]=indata[4];
+ 234   3                                       P0=0;
+ 235   3                      }
+ 236   2              }
+ 237   1      }
+C51 COMPILER V7.07   51_DHT21                                                              06/27/2009 10:04:27 PAGE 5   
+
+ 238          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    405    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     36       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)
