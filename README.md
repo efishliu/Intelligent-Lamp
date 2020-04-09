@@ -18,8 +18,12 @@
 &emsp;&emsp;它应用超声波测距技术，通过TRIG (P2_0)、ECHO(P1_3)触发定时器T1，通过定时器的数据差来计算距离，主要通过[Distance函数](https://github.com/efishliu/Intelligent-Lamp/tree/master/Unit-test/distance-test)实现。
 
 * **LED冷暖光灯/LED提示灯**  
-&emsp;&emsp;提示灯：它应用PWM调光原理，通过亮度周期来调节LED的闪烁，通过P1_4口来进行调节。主要通过[PWM函数](https://github.com/efishliu/Intelligent-lamp/tree/master/Unit-test/Lamp-test)实现。  
-&emsp;&emsp;~~冷暖光灯：它应用PWM调光原理，通过亮度占空比来调节LED的亮度，通过P1_0、P1_1口来进行调节。主要通过[PWM函数](https://github.com/efishliu/Intelligent-lamp/tree/master/Unit-test/Lamp-test)实现。(存在问题)~~  
+&emsp;&emsp;提示灯：它应用PWM调光原理，通过亮度周期来调节LED的闪烁，通过P1_4口来进行调节。主要通过[PWM函数](https://github.com/efishliu/Intelligent-Lamp/tree/master/Unit-test/Lamp-test)实现。  
+&emsp;&emsp;~~冷暖光灯：它应用PWM调光原理，通过亮度占空比来调节LED的亮度，通过P1_0、P1_1口来进行调节。主要通过[PWM函数](https://github.com/efishliu/Intelligent-Lamp/tree/master/Unit-test/Lamp-test)实现。(存在问题)~~  
+
+* **Zigbee无线组网**  
+智能小灯与协调器之间通过ZStack协议(Zigbee协议栈)进行组网，~~具体参照:[Zigbee组网](https://github.com/efishliu/Intelligent-Lamp/tree/master/Zigbee)(未实现）。~~  
+该项目采用的是单机模式运行，具体参照：[Single-Point](https://github.com/efishliu/Intelligent-Lamp/tree/master/Single-point)。  
 
 * **Windows展示界面（QT实现）**  
 &emsp;&emsp;通过串口获取CC2530开发板的各个传感器的数据，并通过可视化的形式进行展示；  
@@ -43,6 +47,12 @@
 2、使用AF_DataRequest()函数广播发送数据  
 3、通过AF_INCOMING_MSG_CMD 事件进行响应，从而完成接收  
 
-## 智能台灯的显示界面
-<div align=center><img src="https://github.com/efishliu/Intelligent-Lamp/blob/master/image/operation-interface.png?raw=true" width = 50% height = 50%  /></div>    
+## 智能台灯的显示界面  
+Windows端图形界面执行程序：[Led.exe](https://github.com/efishliu/Intelligent-Lamp/tree/master/Qt-intelligent-led/Intelligent-led)
+<div align=center><img src="https://github.com/efishliu/Intelligent-Lamp/blob/master/image/operation-interface.png?raw=true" width = 50% height = 50%  /></div>   
+
+**项目说明资料**  
+* [Project-Description.docx](https://github.com/efishliu/Intelligent-Lamp/blob/master/Project-Description.docx)
+* [A-Lamp-based-on-ZStack.pptx](https://github.com/efishliu/Intelligent-Lamp/blob/master/A%20Lamp%20based%20on%20ZStack.pptx)
+
 
